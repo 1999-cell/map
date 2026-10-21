@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "DevForge — Web IDE & Workspace",
+  "description": "In-browser development environment with file explorer, multi-tab code editor, live sandboxed preview, and instant code updates.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
