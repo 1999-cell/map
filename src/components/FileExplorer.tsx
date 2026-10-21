@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -9,7 +9,8 @@ import {
   Download, 
   Filter,
   X,
-  Check
+  Check,
+  Upload
 } from 'lucide-react';
 import { VirtualFile } from '../types';
 import { FileIcon } from './FileIcon';
@@ -23,6 +24,7 @@ interface FileExplorerProps {
   onRenameItem: (id: string, newName: string) => void;
   onDeleteItem: (id: string) => void;
   onDownloadFile: (file: VirtualFile) => void;
+  onUploadFile: (file: File) => void;
 }
 
 export function FileExplorer({
@@ -33,8 +35,10 @@ export function FileExplorer({
   onCreateFolder,
   onRenameItem,
   onDeleteItem,
-  onDownloadFile
+  onDownloadFile,
+  onUploadFile
 }: FileExplorerProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
     'dir-src': true,
     'dir-components': true
@@ -46,6 +50,13 @@ export function FileExplorer({
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      onUploadFile(e.target.files[0]);
+      e.target.value = '';
+    }
+  };
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => ({ ...prev, [folderId]: !prev[folderId] }));
@@ -263,6 +274,20 @@ export function FileExplorer({
         <span className="truncate">Files & Project</span>
         
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="p-1 hover:text-white hover:bg-zinc-800 rounded transition"
+            title="Import/Upload File from Computer"
+          >
+            <Upload className="w-3.5 h-3.5 text-zinc-400" />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            onChange={handleFileInputChange}
+            className="hidden"
+            accept=".tsx,.ts,.jsx,.js,.json,.html,.css,.md,.txt,.env"
+          />
           <button
             onClick={() => {
               setSelectedParentId(null);

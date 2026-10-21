@@ -7,7 +7,8 @@ import {
   Save, 
   Check, 
   ChevronRight,
-  Maximize2
+  Maximize2,
+  AlignLeft
 } from 'lucide-react';
 import { VirtualFile, EditorSettings } from '../types';
 import { FileIcon } from './FileIcon';
@@ -136,6 +137,22 @@ export function CodeEditor({
     }
   };
 
+  const handleFormatCode = () => {
+    if (!activeFile) return;
+    try {
+      if (activeFile.language === 'json') {
+        const parsed = JSON.parse(activeFile.content);
+        const formatted = JSON.stringify(parsed, null, settings.tabSize);
+        onUpdateFileContent(activeFile.id, formatted);
+        return;
+      }
+      // General code formatting: normalize newlines, trim trailing whitespace per line
+      const lines = activeFile.content.split('\n').map(l => l.trimEnd());
+      const formatted = lines.join('\n').trim() + '\n';
+      onUpdateFileContent(activeFile.id, formatted);
+    } catch (_) {}
+  };
+
   const handleSearchReplace = (replaceAll: boolean = false) => {
     if (!activeFile || !searchTerm) return;
     let newContent = activeFile.content;
@@ -214,6 +231,13 @@ export function CodeEditor({
 
         {/* Tab Bar Utilities */}
         <div className="ml-auto flex items-center pr-2 gap-1">
+          <button
+            onClick={handleFormatCode}
+            className="p-1.5 rounded text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition"
+            title="Format Code / Fix Indentation"
+          >
+            <AlignLeft className="w-3.5 h-3.5" />
+          </button>
           <button
             onClick={() => setShowSearch(!showSearch)}
             className={`p-1.5 rounded transition ${

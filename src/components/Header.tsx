@@ -9,7 +9,9 @@ import {
   RotateCcw,
   Sparkles,
   FilePlus,
-  HelpCircle
+  HelpCircle,
+  LayoutGrid,
+  GitCompare
 } from 'lucide-react';
 import { LayoutMode, VirtualFile } from '../types';
 
@@ -23,6 +25,8 @@ interface HeaderProps {
   onResetProject: () => void;
   onOpenSnippets: () => void;
   onOpenShortcuts: () => void;
+  onOpenTemplates: () => void;
+  onOpenDiff: () => void;
   isRunning: boolean;
 }
 
@@ -36,6 +40,8 @@ export function Header({
   onResetProject,
   onOpenSnippets,
   onOpenShortcuts,
+  onOpenTemplates,
+  onOpenDiff,
   isRunning
 }: HeaderProps) {
   return (
@@ -111,8 +117,26 @@ export function Header({
 
         {/* Quick Nav Tools */}
         <button
-          onClick={onNewFile}
+          onClick={onOpenTemplates}
           className="hidden lg:flex items-center gap-1 px-2.5 py-1.5 text-xs text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition"
+          title="Starter Project Templates"
+        >
+          <LayoutGrid className="w-3.5 h-3.5 text-blue-400" />
+          <span>Templates</span>
+        </button>
+
+        <button
+          onClick={onOpenDiff}
+          className="hidden lg:flex items-center gap-1 px-2.5 py-1.5 text-xs text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition"
+          title="Inspect Diff vs Baseline"
+        >
+          <GitCompare className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Diff</span>
+        </button>
+
+        <button
+          onClick={onNewFile}
+          className="hidden md:flex items-center gap-1 px-2.5 py-1.5 text-xs text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition"
           title="Create New File"
         >
           <FilePlus className="w-3.5 h-3.5 text-blue-400" />

@@ -25,6 +25,8 @@ import { CodeEditor } from './components/CodeEditor';
 import { LivePreview } from './components/LivePreview';
 import { ConsoleDrawer } from './components/ConsoleDrawer';
 import { ShortcutsModal } from './components/ShortcutsModal';
+import { TemplatesModal, ProjectTemplate } from './components/TemplatesModal';
+import { DiffViewerModal } from './components/DiffViewerModal';
 
 const LOCAL_STORAGE_KEY = 'devforge_project_files_v1';
 const SETTINGS_KEY = 'devforge_editor_settings_v1';
@@ -72,6 +74,8 @@ export default function App() {
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('split');
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [isDiffOpen, setIsDiffOpen] = useState(false);
 
   // Runtime and preview state
   const [htmlPayload, setHtmlPayload] = useState<string>('');
@@ -272,6 +276,58 @@ export default function App() {
     setActiveFileId(id);
   };
 
+  // Upload file from local computer
+  const handleUploadFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const id = `f-uploaded-${Date.now()}`;
+      const name = file.name;
+      const lang = detectLanguage(name);
+
+      const newFile: VirtualFile = {
+        id,
+        name,
+        path: `/${name}`,
+        content: text,
+        language: lang,
+        isFolder: false,
+        parentId: null,
+        isModified: true
+      };
+
+      setFiles(prev => [...prev, newFile]);
+      setOpenFileIds(prev => [...prev, id]);
+      setActiveFileId(id);
+    };
+    reader.readAsText(file);
+  };
+
+  // Switch to a starter template
+  const handleSelectTemplate = (template: ProjectTemplate) => {
+    setFiles(prev =>
+      prev.map(f =>
+        f.path === '/src/App.tsx'
+          ? { ...f, content: template.appCode, isModified: true }
+          : f
+      )
+    );
+    const appFile = files.find(f => f.path === '/src/App.tsx');
+    if (appFile) {
+      setActiveFileId(appFile.id);
+      if (!openFileIds.includes(appFile.id)) {
+        setOpenFileIds(prev => [...prev, appFile.id]);
+      }
+    }
+    // Re-compile live preview
+    const updated = files.map(f =>
+      f.path === '/src/App.tsx'
+        ? { ...f, content: template.appCode, isModified: true }
+        : f
+    );
+    compilePreview(updated);
+  };
+
   // Create folder
   const handleCreateFolder = (name: string, parentId: string | null) => {
     const parent = parentId ? files.find(f => f.id === parentId) : null;
@@ -410,6 +466,8 @@ export default function App() {
           setIsSidebarOpen(true);
         }}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
+        onOpenTemplates={() => setIsTemplatesOpen(true)}
+        onOpenDiff={() => setIsDiffOpen(true)}
         isRunning={isRunning}
       />
 
@@ -439,6 +497,7 @@ export default function App() {
                 onRenameItem={handleRenameItem}
                 onDeleteItem={handleDeleteItem}
                 onDownloadFile={downloadSingleFile}
+                onUploadFile={handleUploadFile}
               />
             )}
             {activeSidebarTab === 'search' && (
@@ -513,6 +572,21 @@ export default function App() {
       <ShortcutsModal
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      {/* Starter Templates Modal */}
+      <TemplatesModal
+        isOpen={isTemplatesOpen}
+        onClose={() => setIsTemplatesOpen(false)}
+        onSelectTemplate={handleSelectTemplate}
+      />
+
+      {/* Diff Inspector Modal */}
+      <DiffViewerModal
+        isOpen={isDiffOpen}
+        onClose={() => setIsDiffOpen(false)}
+        activeFile={activeFile}
+        files={files}
       />
     </div>
   );
